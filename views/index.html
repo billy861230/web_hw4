@@ -1,0 +1,545 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Chatroom</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+    </script>
+    <style type="text/css">
+
+        *::-moz-focus-inner {
+            border: 0;
+        }
+
+
+        .todolist-delete {
+            width: 25px;
+            height: 25px;
+            position: absolute;
+            top: 11px;
+            right: 11px;
+        }
+
+        .todolist-delete [type="button"] {
+            border: none;
+            background-color: transparent;
+        }
+
+        .todolist-delete label {
+            cursor: pointer;
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            top: 0;
+            left: 0;
+        }
+
+        .todolist-delete label::after {
+            opacity: 1;
+            content: '';
+            position: absolute;
+            width: 9px;
+            height: 9px;
+            background: transparent;
+            top: 0px;
+            left: 6px;
+            border: 3px solid gray;
+            border-top: none;
+            border-right: none;
+            transform: rotate(-45deg);
+        }
+
+        .todolist-delete label::before {
+            opacity: 1;
+            content: '';
+            position: absolute;
+            width: 9px;
+            height: 9px;
+            background: transparent;
+            bottom: 0px;
+            left: 6px;
+            border: 3px solid gray;
+            border-bottom: none;
+            border-left: none;
+            transform: rotate(-45deg);
+        }
+
+        .todolist-delete label:hover::after {
+            border-color: red;
+            opacity: 0.5;
+        }
+
+        .todolist-delete label:hover::before {
+            border-color: red;
+            opacity: 0.5;
+        }
+
+        .todolist-delete label:active::after {
+            opacity: 1;
+        }
+
+        .todolist-delete label:active::before {
+            opacity: 1;
+        }
+
+        .todolist-checkbox {
+            width: 25px;
+            height: 25px;
+            top: 10px;
+            left: 10px;
+            position: absolute;
+        }
+
+        .todolist-unit {
+            width: 100%;
+            height: 50px;
+            position: relative;
+            background-color: rgb(233, 232, 232);
+            border-bottom: 1px solid gray;
+        }
+
+        .todolist-unit:hover {
+            background-color: rgb(200, 200, 200);
+        }
+
+        .todolist-unit:active {
+            background-color: rgb(180, 180, 180);
+        }
+
+        .todolist-unit-selected {
+            background-color: rgb(180, 180, 180);
+        }
+
+        .todolist-new {
+            width: 100%;
+            height: 50px;
+            position: relative;
+        }
+
+        .todolist-checkbox label {
+            cursor: pointer;
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            top: 0;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .todolist-checkbox label::after {
+            opacity: 0;
+            content: '';
+            position: absolute;
+            width: 9px;
+            height: 5px;
+            background: transparent;
+            top: 6px;
+            left: 7px;
+            border: 3px solid rgb(12, 189, 21);
+            border-top: none;
+            border-right: none;
+
+            transform: rotate(-45deg);
+        }
+
+        .todolist-checkbox label:hover::after {
+            opacity: 0.3;
+        }
+
+        .todolist-checkbox input[type=checkbox]:checked+label::after {
+            opacity: 1;
+        }
+
+        .todolist-edit {
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            position: absolute;
+            top: 11px;
+            right: 41px;
+            border: none;
+            background-color: transparent;
+            background-image: url(https://i.imgur.com/2PilDlM.png);
+            opacity: 0.3;
+        }
+
+        .todolist-edit:hover {
+            opacity: 0.5;
+        }
+
+        .todolist-edit:active {
+            opacity: 1;
+        }
+
+        .todolist-title {
+            font-size: 20px;
+            width: 350px;
+            height: 24px;
+            color: black;
+            position: absolute;
+            top: 11px;
+            left: 50px;
+            border: none;
+            background-color: transparent;
+        }
+
+        .capture-click {
+            width: 350px;
+            height: 24px;
+            position: absolute;
+            top: 11px;
+            left: 50px;
+        }
+
+        .new-list-p {
+            font-size: 20px;
+            position: absolute;
+            top: 12px;
+            left: 50px;
+        }
+
+        #left-div {
+            font-family: 'geomanistregular', serif;
+            position: absolute;
+            width: 500px;
+            height: 100vh;
+            left: 0;
+            border: none;
+            background-color: rgb(233, 232, 232);
+            box-shadow: 5px 0px 5px black;
+            overflow: scroll;
+        }
+
+        #left-div-title {
+            font-size: 30px;
+            margin: 10px 20px;
+        }
+
+        #new-list-button {
+            cursor: pointer;
+            background-image: url(https://i.imgur.com/v4ffd11.png);
+            background-color: transparent;
+            border: none;
+            width: 24px;
+            height: 24px;
+            position: absolute;
+            left: 13px;
+            top: 13px;
+            opacity: 0.3;
+        }
+
+        #new-list-button:hover {
+            opacity: 0.5;
+        }
+
+        #new-list-button:active {
+            opacity: 1;
+        }
+
+        #right-div {
+            font-family: 'geomanistregular', serif;
+            position: absolute;
+            width: 800px;
+            height: 100vh;
+            left: 510px;
+            border: none;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+
+        .todoitem-div {}
+
+        .todoitem-new {
+            height: 50px;
+            width: 100%;
+            position: relative;
+        }
+
+        .talk-left {
+            border: 1px black solid;
+            height: 24px;
+            width: 600px;
+            position: relative;
+            top: 11px;
+            left: 50px;
+        }
+
+        .talk-right {
+            border: 1px black solid;
+            height: 24px;
+            width: 600px;
+            position:relative;
+            top: 11px;
+            left: 50px;
+            direction: rtl;
+        }
+
+        .circle {
+            border-radius: 50%;
+            height: 10px;
+            width: 10px;
+            background-color: black;
+            position: absolute;
+            left: 20px;
+            top: 20px;
+        }
+
+        .new-item-button {
+            height: 24px;
+            width: 60px;
+            position: absolute;
+            bottom: 13px;
+            right: 20px;
+        }
+
+        
+
+        .todoitem-unit {
+            width: 100%;
+            height: 50px;
+            position: relative;
+        }
+
+        .todoitem-unit [type="checkbox"] {
+            position: absolute;
+            height: 24px;
+            width: 24px;
+            left: 13px;
+            top: 13px;
+        }
+
+        .todoitem-unit p {
+            font-size: 20px;
+            height: 24px;
+            width: 600px;
+            position: absolute;
+            left: 50px;
+            top: 13px;
+
+        }
+
+        .todoitem-unit [type="button"] {
+            background-color: transparent;
+            background-image: url(https://i.imgur.com/ttRnkSW.png);
+            position: absolute;
+            border: none;
+            height: 24px;
+            width: 24px;
+            right: 100px;
+            top: 13px;
+            opacity: 0.1;
+        }
+
+        .todoitem-unit [type="button"]:hover {
+            opacity: 0.3;
+        }
+
+        .todoitem-unit [type="button"]:active {
+            opacity: 1;
+        }
+        .todoitem-title {
+            border:1px black solid;
+            height:24px;
+            width:600px;
+            position:absolute;
+            bottom:11px;
+            left:50px;
+        }
+    </style>
+    <title>TodoList</title>
+</head>
+
+<body>
+    <div id="log">
+        <h>Choose an account to log in</h>
+        <input type="button" value="0" id="log0" onclick="log0()"/>
+        <input type="button" value="1" id="log1" onclick="log1()" />
+        <input type="button" value="2" id="log2" onclick="log2()" />
+    </div>
+    <div id="left-div">
+        <h3 id="left-div-title">user list</h3>
+        <div class="todolist-unit" id="0">
+            <input type="text" class="todolist-title" value="0" maxlength="30" disabled />
+            <div class="todolist-delete">
+                
+            </div>
+            <div class="circle" id="c0"></div>
+            <div class="capture-click" onclick="select0()"></div>
+            <!--<input type="button" onclick="logout()"></input>-->
+        </div>
+        <div class="todolist-unit" id="1">
+            <input type="text" class="todolist-title" value="1" maxlength="30" disabled />
+            <div class="todolist-delete">
+        
+            </div>
+            <div class="circle" id="c1"></div>
+            <div class="capture-click" onclick="select1()"></div>
+        </div>
+        <div class="todolist-unit" id="2">
+            <input type="text" class="todolist-title" value="2" maxlength="30" disabled />
+            <div class="todolist-delete">
+        
+            </div>
+            <div class="circle" id="c2"></div>
+            <div class="capture-click" onclick="select2()"></div>
+        </div>
+        
+    </div>
+    <div id="right-div">
+        <div id='usr'></div>
+        <!--div to put todoitem-->
+        
+            <div class="todoitem-new" id="tdi-new-button">
+                
+            </div>
+        <div id="container0"></div>
+        <div id="container1"></div>
+        <div id="container2"></div>
+        <input type="text" id="todoinput" class="todoitem-title" placeholder="..." />
+        <input type="button" onclick="send()" class="new-item-button" value="send" />
+    </div>
+
+    <script >
+        var left=document.getElementById('left-div');
+        var right = document.getElementById('right-div');
+        left.style.display='none';
+        right.style.display = 'none';
+        var talk;
+        var usr;
+        var selected=1;
+        function log0(){
+            socket.emit('log', 0);
+        }
+        function log1() {
+            socket.emit('log', 1);
+        }
+        function log2() {
+            socket.emit('log', 2);
+        }
+        function logout(){
+            socket.emit('logout',usr);
+            document.getElementById('0').style.display = 'initial';
+            document.getElementById('1').style.display = 'initial';
+            document.getElementById('2').style.display = 'initial';
+            document.getElementById('left-div').style.display='none';
+            document.getElementById('right-div').style.display = 'none';
+            document.getElementById('log').style.display = 'initial';
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            socket.on("log",function(accout){
+                console.log('log'+accout);
+                if(accout<0){
+                    alert('account has already be logged in,please select another one');
+                    return;
+                }
+                document.getElementById('c0').style.display='none';
+                document.getElementById('c1').style.display = 'none';
+                document.getElementById('c2').style.display = 'none';
+                left.style.display='initial';
+                right.style.display = 'initial';
+                var log=document.getElementById('log');
+                log.style.display='none';
+                usr = accout;
+                document.title = usr;
+                document.getElementById('usr').innerHTML='current user: '+usr;
+                var disable = document.getElementById(accout);
+                disable.style.display = 'none';
+                let disable1 = document.getElementById('container'+account);
+                console.log('container'+accout);
+                disable1.style.display='none';//not yet handle show page
+                let s=(parseInt(usr+1))%3;    //?
+                if(s===0)select0();
+                else if (s===1)select1();
+                else select2();
+                console.log(usr);
+            });
+            socket.on("msg", function(msg){
+                console.log('msg');
+                if(msg.to==usr){
+                    console.log('to me');
+                    var div=document.createElement("div");
+                    div.classList.add('talk-left');
+                    var container=document.getElementById('container'+msg.from);
+                    div.innerHTML=msg.msg;
+                    div.classList.add()
+                    container.appendChild(div);
+                    var reminder=document.getElementById('c'+msg.from);
+                    reminder.style.display='initial';
+                }else if(msg.from==usr){
+                    console.log('from me');
+                    var div = document.createElement("div");
+                    div.classList.add('talk-right');
+                    var container = document.getElementById('container' + msg.to);
+                    div.innerHTML = msg.msg;
+                    div.classList.add()
+                    container.appendChild(div);
+                }
+            })
+        });
+        function select0(){                                               //not yet implement cancel reminder
+            console.log('0');
+            var select=document.getElementById('container'+selected);
+            select.style.display='none';
+            var select_usr=document.getElementById(selected);
+            select_usr.classList.remove('todolist-unit-selected');
+            var new_select=document.getElementById('container0');
+            new_select.style.display='initial';
+            var user=document.getElementById('0');
+            user.classList.add('todolist-unit-selected');
+            selected=0;
+            document.getElementById('c0').style.display='none';
+        }
+        function select1() {
+            console.log('1');
+            var select = document.getElementById('container' + selected);
+            select.style.display = 'none';
+            var select_usr = document.getElementById(selected);
+            select_usr.classList.remove('todolist-unit-selected');
+            var new_select = document.getElementById('container1');
+            new_select.style.display = 'initial';
+            var user = document.getElementById('1');
+            user.classList.add('todolist-unit-selected');
+            selected = 1;
+            document.getElementById('c1').style.display = 'none';
+        }
+        function select2() {
+            console.log('2');
+            var select = document.getElementById('container' + selected);
+            select.style.display = 'none';
+            var select_usr = document.getElementById(selected);
+            select_usr.classList.remove('todolist-unit-selected');
+            var new_select = document.getElementById('container2');
+            new_select.style.display = 'initial';
+            var user = document.getElementById('2');
+            user.classList.add('todolist-unit-selected');
+            selected = 2;
+            document.getElementById('c2').style.display = 'none';
+        }
+        function send(){
+            let msg=document.getElementById('todoinput').value;
+            if(msg===''){
+                alert('please type sth');
+                return;
+            }
+            let data={
+                to:selected,
+                from:usr,
+                msg:msg
+            };
+            socket.emit('msg',data);
+            document.getElementById('todoinput').value='';
+            var div=document.createElement('div');
+            div.classList.add('talk-right');
+            div.innerHTML=msg;
+            document.getElementById('container'+selected).appendChild(div);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Chatroom</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+    </script>
+</head>
+<body>
+
+    <h1>Choose an account to log in</h1>
+    <input type="button" onclick="send0()" value="0" />
+    <input type="button" onclick="send1()" value="1" />
+    <input type="button" onclick="send2()" value="2" />
+    <script>
+        function send0(){
+            socket.emit('log', 0);
+        }
+        function send1() {
+            socket.emit('log', 1);
+        }
+        function send2() {
+            socket.emit('log', 2);
+        }
+    </script>
+</body>
+
+</html>
