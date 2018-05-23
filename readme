@@ -1,0 +1,7 @@
+usage:
+    npm install express --save
+    sudo npm install express-generator -g
+    npm install -S socket.io
+    node index.js
+
+*備註：在切換聯絡人時請點擊數字附近，太過邊邊的地方可能會抓不到，謝謝。
